@@ -19,7 +19,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.jaytailor15.MoodTrackerAI"
     },
     "web": {
       "favicon": "./assets/favicon.png"
