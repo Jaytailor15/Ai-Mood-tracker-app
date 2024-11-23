@@ -6,6 +6,7 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    TouchableOpacity,
     View
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
@@ -146,6 +147,15 @@ const HistoryScreen = () => {
                 {entry.note}
               </Text>
             )}
+            <View style={styles.viewDetailsContainer}>
+              <TouchableOpacity 
+                style={[styles.viewDetailsButton, { backgroundColor: `${theme.colors.primary}10` }]}
+                onPress={() => {/* Handle view details */}}
+              >
+                <Text style={[styles.viewDetailsText, { color: theme.colors.primary }]}>Details</Text>
+                <Icon name="chevron-forward" size={14} color={theme.colors.primary} />
+              </TouchableOpacity>
+            </View>
           </Animated.View>
         ))}
       </View>
@@ -267,6 +277,23 @@ const styles = StyleSheet.create({
     fontSize: isSmallDevice ? 14 : 16,
     textAlign: 'center',
     lineHeight: isSmallDevice ? 22 : 24,
+  },
+  viewDetailsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: height * 0.012,
+  },
+  viewDetailsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  viewDetailsText: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginRight: 2,
   },
 });
 

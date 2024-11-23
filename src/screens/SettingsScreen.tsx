@@ -36,7 +36,7 @@ const SettingsScreen = () => {
     switchValue?: boolean,
     onSwitchChange?: (value: boolean) => void
   ) => (
-    <TouchableOpacity 
+    <View 
       style={[
         styles.settingItem, 
         { 
@@ -44,8 +44,6 @@ const SettingsScreen = () => {
           shadowColor: theme.dark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)'
         }
       ]}
-      onPress={action}
-      disabled={!action && !hasSwitch}
     >
       <View style={styles.settingContent}>
         <View style={[
@@ -72,8 +70,8 @@ const SettingsScreen = () => {
             <Text style={[
               styles.settingSubtext, 
               { 
-                color: `${theme.colors.text}80`,
-                fontSize: isSmallDevice ? 12 : 14
+                color: `${theme.colors.text}60`,
+                fontSize: isSmallDevice ? 12 : 13
               }
             ]}>
               {subtitle}
@@ -92,20 +90,22 @@ const SettingsScreen = () => {
             }}
             thumbColor={Platform.OS === 'ios' ? '#FFFFFF' : switchValue ? theme.colors.primary : '#F0F0F0'}
             ios_backgroundColor={theme.dark ? '#4A5568' : '#CBD5E0'}
-            style={[
-              styles.switch,
-              Platform.OS === 'ios' && styles.iosSwitch
-            ]}
+            style={styles.switch}
           />
         </View>
       ) : action && (
-        <Icon 
-          name="chevron-forward" 
-          size={isSmallDevice ? 18 : 20} 
-          color={`${theme.colors.text}60`} 
-        />
+        <TouchableOpacity 
+          onPress={action}
+          style={styles.chevronButton}
+        >
+          <Icon 
+            name="chevron-forward" 
+            size={isSmallDevice ? 18 : 20} 
+            color={`${theme.colors.text}40`} 
+          />
+        </TouchableOpacity>
       )}
-    </TouchableOpacity>
+    </View>
   );
 
   return (
@@ -222,7 +222,6 @@ const styles = StyleSheet.create({
   },
   settingText: {
     fontSize: 16,
-    marginLeft: 12,
   },
   iconContainer: {
     width: width * 0.1,
@@ -238,7 +237,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
-    marginRight: width * 0.03,
+    marginRight: width * 0.02,
   },
   settingSubtext: {
     fontSize: 14,
@@ -265,6 +264,14 @@ const styles = StyleSheet.create({
   },
   versionText: {
     fontSize: 16,
+  },
+  chevronButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginLeft: 10,
   },
 });
 

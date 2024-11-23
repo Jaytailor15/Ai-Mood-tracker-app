@@ -21,6 +21,8 @@ const MoodCard = ({ onSubmit }: { onSubmit: (entry: any) => void }) => {
   const { theme } = useContext(ThemeContext);
   const [moodValue, setMoodValue] = useState(3);
   const [note, setNote] = useState('');
+  const [insight, setInsight] = useState<{ message: string } | null>(null);
+  const [lastMoodValue, setLastMoodValue] = useState<number | null>(null);
 
   const getMoodDescription = (value: number) => {
     switch (value) {
@@ -44,6 +46,17 @@ const MoodCard = ({ onSubmit }: { onSubmit: (entry: any) => void }) => {
     }
   };
 
+  const getInsightMessage = (moodValue: number) => {
+    const messages = {
+      1: "I notice you're experiencing a challenging moment. Remember that difficult feelings are temporary, and it's okay to take time for self-care.",
+      2: "Your mood appears to be lower than usual. Small positive actions can help shift your perspective.",
+      3: "You're maintaining a balanced emotional state. This is a good opportunity to engage in activities that nurture your well-being.",
+      4: "You're experiencing positive emotions! This energy can be channeled into meaningful activities.",
+      5: "Your excellent mood is wonderful to see! These peak moments are perfect for tackling important goals!"
+    };
+    return messages[moodValue as keyof typeof messages] || "Share how you're feeling to receive personalized insights.";
+  };
+
   return (
     <Animated.View 
       entering={FadeInDown.delay(400)}
@@ -55,130 +68,77 @@ const MoodCard = ({ onSubmit }: { onSubmit: (entry: any) => void }) => {
         }
       ]}
     >
-      <View style={styles.moodHeader}>
-        <Text style={[styles.moodValue, { color: theme.colors.primary }]}>
-          {getMoodEmoji(moodValue)} {getMoodDescription(moodValue)}
-        </Text>
-        <Text style={[styles.moodScale, { color: theme.colors.text }]}>
-          {moodValue.toFixed(1)}
-        </Text>
-      </View>
+      <View style={styles.cardSection}>
+        <View style={styles.moodHeader}>
+          <Text style={[styles.moodValue, { color: theme.colors.primary }]}>
+            {getMoodEmoji(moodValue)} {getMoodDescription(moodValue)}
+          </Text>
+          <Text style={[styles.moodScale, { color: theme.colors.text }]}>
+            {moodValue.toFixed(1)}
+          </Text>
+        </View>
 
-      <View style={styles.customSliderContainer}>
-        {[1, 2, 3, 4, 5].map((value) => (
-          <TouchableOpacity
-            key={value}
-            onPress={() => setMoodValue(value)}
-            style={[
-              styles.moodButton,
-              moodValue === value && styles.selectedMoodButton,
-              {
-                backgroundColor: moodValue === value 
-                  ? `${theme.colors.primary}12`
-                  : 'transparent',
-                borderWidth: 1.5,
-                borderColor: moodValue === value 
-                  ? theme.colors.primary
-                  : `${theme.colors.text}15`
-              }
-            ]}
-          >
-            <Text style={[
-              styles.moodButtonText,
-              { 
+        <View style={styles.customSliderContainer}>
+          {[1, 2, 3, 4, 5].map((value) => (
+            <TouchableOpacity
+              key={value}
+              onPress={() => setMoodValue(value)}
+              style={[
+                styles.moodButton,
+                moodValue === value && styles.selectedMoodButton,
+                {
+                  backgroundColor: moodValue === value ? `${theme.colors.primary}12` : 'transparent',
+                  borderWidth: 1.5,
+                  borderColor: moodValue === value ? theme.colors.primary : `${theme.colors.text}15`
+                }
+              ]}
+            >
+              <Text style={[styles.moodButtonText, { 
                 color: theme.colors.text,
                 opacity: moodValue === value ? 1 : 0.6,
-              }
-            ]}>
-              {getMoodEmoji(value)}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              }]}>
+                {getMoodEmoji(value)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <View style={styles.moodLabelsContainer}>
+          <Text style={[styles.moodLabel, { color: `${theme.colors.text}80` }]}>Very Bad</Text>
+          <Text style={[styles.moodLabel, { color: `${theme.colors.text}80` }]}>Excellent</Text>
+        </View>
+
+        <TouchableOpacity
+          style={[styles.submitButton, { backgroundColor: theme.colors.primary }]}
+          onPress={() => {
+            onSubmit({ scale: moodValue, timestamp: new Date(), note });
+            setLastMoodValue(moodValue);
+          }}
+        >
+          <Text style={styles.submitButtonText}>Track Mood</Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.moodLabelsContainer}>
-        <Text style={[styles.moodLabel, { color: `${theme.colors.text}80` }]}>Very Bad</Text>
-        <Text style={[styles.moodLabel, { color: `${theme.colors.text}80` }]}>Excellent</Text>
-      </View>
-
-      <TouchableOpacity
-        style={[styles.submitButton, { backgroundColor: theme.colors.primary }]}
-        onPress={() => onSubmit({ scale: moodValue, timestamp: new Date(), note })}
-      >
-        <Text style={styles.submitButtonText}>Track Mood</Text>
-      </TouchableOpacity>
-    </Animated.View>
-  );
-};
-
-const AIInsightCard = ({ insight, lastMood }: { 
-  insight: { message: string } | null;
-  lastMood: number | null;
-}) => {
-  const { theme } = useContext(ThemeContext);
-  
-  const getDefaultMessage = () => {
-    return "Share how you're feeling to receive personalized AI insights about your emotional well-being.";
-  };
-
-  const getInsightMessage = (moodValue: number) => {
-    const messages = {
-      1: "I notice you're experiencing a challenging moment. Remember that difficult feelings are temporary, and it's okay to take time for self-care. Consider talking to someone you trust or engaging in calming activities.",
-      2: "Your mood appears to be lower than usual. Small positive actions can help shift your perspective. Perhaps try a short walk, some deep breathing, or connecting with a friend?",
-      3: "You're maintaining a balanced emotional state. This is a good opportunity to engage in activities that nurture your well-being and strengthen your resilience.",
-      4: "You're experiencing positive emotions! This energy can be channeled into meaningful activities or used to uplift others around you.",
-      5: "Your excellent mood is wonderful to see! These peak moments are perfect for tackling important goals or spreading positivity. Take note of what contributed to this state!"
-    };
-    return messages[moodValue as keyof typeof messages] || getDefaultMessage();
-  };
-
-  return (
-    <Animated.View 
-      entering={FadeInDown.delay(600)}
-      style={[
-        styles.aiInsightCard,
-        { 
-          backgroundColor: theme.colors.card,
-          borderWidth: 1,
-          borderColor: `${theme.colors.primary}20`
-        }
-      ]}
-    >
-      <View style={styles.aiInsightHeader}>
-        <View style={styles.aiInsightTitleContainer}>
-          <View style={[
-            styles.aiIconContainer,
-            { backgroundColor: `${theme.colors.primary}15` }
-          ]}>
-            <Icon 
-              name="analytics-outline"
-              size={20} 
-              color={theme.colors.primary} 
-            />
-          </View>
-          <View style={styles.aiTitleWrapper}>
+      <View style={[styles.aiSection, { borderTopColor: `${theme.colors.text}15` }]}>
+        <View style={styles.aiInsightHeader}>
+          <View style={styles.aiInsightTitleContainer}>
+            <View style={[styles.aiIconContainer, { backgroundColor: `${theme.colors.primary}15` }]}>
+              <Icon name="analytics-outline" size={20} color={theme.colors.primary} />
+            </View>
             <Text style={[styles.aiInsightTitle, { color: theme.colors.text }]}>
               AI Mood Analysis
             </Text>
-            <Text style={[styles.aiSubtitle, { color: `${theme.colors.text}80` }]}>
-              Personalized Insights
-            </Text>
           </View>
+          {lastMoodValue && (
+            <View style={[styles.lastMoodBadge, { backgroundColor: `${theme.colors.primary}15` }]}>
+              <Text style={[styles.lastMoodText, { color: theme.colors.primary }]}>
+                Level: {lastMoodValue}
+              </Text>
+            </View>
+          )}
         </View>
-        {lastMood && (
-          <View style={[
-            styles.lastMoodBadge, 
-            { backgroundColor: `${theme.colors.primary}15` }
-          ]}>
-            <Text style={[styles.lastMoodText, { color: theme.colors.primary }]}>
-              Mood Level: {lastMood}
-            </Text>
-          </View>
-        )}
-      </View>
-      <View style={styles.aiInsightContent}>
         <Text style={[styles.aiInsightText, { color: `${theme.colors.text}90` }]}>
-          {insight ? insight.message : lastMood ? getInsightMessage(lastMood) : getDefaultMessage()}
+          {insight ? insight.message : lastMoodValue ? getInsightMessage(lastMoodValue) : getInsightMessage(moodValue)}
         </Text>
       </View>
     </Animated.View>
@@ -281,8 +241,6 @@ const HomeScreen = () => {
             <MoodCard onSubmit={handleMoodSubmit} />
           </View>
         </View>
-
-        <AIInsightCard insight={insight} lastMood={lastMoodValue} />
       </View>
     </ScrollView>
   );
@@ -361,63 +319,58 @@ const styles = StyleSheet.create({
   moodInputContainer: {
     marginBottom: height * 0.02,
   },
-  aiInsightCard: {
-    borderRadius: 20,
-    padding: width * 0.04,
-    marginVertical: height * 0.02,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  aiIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: width * 0.03,
-  },
-  aiTitleWrapper: {
-    flex: 1,
-  },
-  aiInsightHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: height * 0.02,
-    paddingBottom: height * 0.02,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
-  },
-  aiInsightContent: {
-    paddingVertical: height * 0.02,
-    paddingHorizontal: width * 0.02,
-  },
-  aiInsightText: {
-    fontSize: isSmallDevice ? 15 : 16,
-    lineHeight: isSmallDevice ? 24 : 26,
-    letterSpacing: 0.3,
-  },
-  lastMoodBadge: {
-    paddingHorizontal: width * 0.03,
-    paddingVertical: height * 0.008,
-    borderRadius: 12,
-  },
-  lastMoodText: {
-    fontSize: isSmallDevice ? 13 : 14,
-    fontWeight: '600',
-    letterSpacing: 0.2,
-  },
   moodCard: {
     borderRadius: 20,
-    padding: width * 0.05,
     marginHorizontal: width * 0.01,
     marginBottom: height * 0.02,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 5,
+    overflow: 'hidden',
+  },
+  cardSection: {
+    padding: width * 0.05,
+  },
+  aiSection: {
+    padding: width * 0.05,
+    borderTopWidth: 1,
+  },
+  aiInsightHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: height * 0.02,
+  },
+  aiInsightTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  aiIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: width * 0.03,
+  },
+  aiInsightTitle: {
+    fontSize: isSmallDevice ? 16 : 18,
+    fontWeight: '600',
+  },
+  aiInsightText: {
+    fontSize: isSmallDevice ? 14 : 15,
+    lineHeight: isSmallDevice ? 20 : 22,
+    letterSpacing: 0.3,
+  },
+  lastMoodBadge: {
+    paddingHorizontal: width * 0.03,
+    paddingVertical: height * 0.006,
+    borderRadius: 8,
+  },
+  lastMoodText: {
+    fontSize: isSmallDevice ? 12 : 13,
+    fontWeight: '600',
   },
   moodHeader: {
     flexDirection: 'row',
@@ -479,18 +432,6 @@ const styles = StyleSheet.create({
     fontSize: isSmallDevice ? 16 : 18,
     fontWeight: 'bold',
     color: 'white',
-  },
-  aiInsightTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  aiInsightTitle: {
-    fontSize: isSmallDevice ? 16 : 18,
-    fontWeight: '600',
-  },
-  aiSubtitle: {
-    fontSize: isSmallDevice ? 12 : 13,
   },
 });
 
